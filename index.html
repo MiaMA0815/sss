@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetheris Weather - 高级暗色系气象与摄影助手</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-cloud-moon"></i>
+                <span>Aetheris<small>.weather</small></span>
+            </div>
+            
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="citySearchInput" placeholder="搜索全球城市（例：北京、London、Tokyo）...">
+                <button id="geoBtn" title="使用当前定位"><i class="fa-solid fa-location-crosshairs"></i></button>
+            </div>
+
+            <div class="header-controls">
+                <button id="unitToggleBtn" class="control-btn"><span id="unitText">°C / °F</span></button>
+                <button id="langToggleBtn" class="control-btn"><i class="fa-solid fa-language"></i> <span id="langText">EN</span></button>
+                <button id="favoriteBtn" class="control-btn" title="收藏当前城市"><i class="fa-regular fa-star" id="favIcon"></i></button>
+            </div>
+        </header>
+
+        <!-- 天气预警滚动条 -->
+        <div id="alertBanner" class="alert-banner hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="alertText">气象预警：当前区域发布暴雨蓝色预警，请注意出行安全。</span>
+        </div>
+
+        <!-- 主体内容网格 -->
+        <div class="main-grid">
+            <!-- 左侧/主面板：实时核心与详细指标 -->
+            <div class="left-panel">
+                <!-- 实时天气大卡片 -->
+                <div class="card current-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 id="cityName">加载中...</h2>
+                            <p id="currentDate">--</p>
+                        </div>
+                        <span class="live-badge"><i class="fa-solid fa-circle-dot"></i> <span data-i18n="live">实时</span></span>
+                    </div>
+                    <div class="current-body">
+                        <div class="temp-section">
+                            <h1 id="currentTemp">--</h1>
+                            <div class="temp-unit-sup">°<span id="tempUnitLabel">C</span></div>
+                        </div>
+                        <div class="weather-icon-desc">
+                            <i id="currentWeatherIcon" class="fa-solid fa-sun weather-anim"></i>
+                            <p id="weatherDesc">获取天气数据中...</p>
+                        </div>
+                    </div>
+                    <div class="high-low-temp">
+                        <span><i class="fa-solid fa-temperature-arrow-up"></i> 最高: <strong id="maxTemp">--°</strong></span>
+                        <span><i class="fa-solid fa-temperature-arrow-down"></i> 最低: <strong id="minTemp">--°</strong></span>
+                        <span><i class="fa-solid fa-wind"></i> 风速: <strong id="windSpeedVal">-- km/h</strong></span>
+                    </div>
+                </div>
+
+                <!-- 24小时逐小时预报 -->
+                <div class="card hourly-card">
+                    <h3><i class="fa-solid fa-clock"></i> <span data-i18n="hourly_forecast">24小时逐小时预报</span></h3>
+                    <div class="hourly-scroll" id="hourlyScroll">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+
+                <!-- 7天长效预报 -->
+                <div class="card daily-card">
+                    <h3><i class="fa-solid fa-calendar-days"></i> <span data-i18n="daily_forecast">7天天气预报</span></h3>
+                    <div class="daily-list" id="dailyList">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧面板：生活指数、摄影助手、卫星地图、收藏列表 -->
+            <div class="right-panel">
+                <!-- 摄影天气助手卡片 -->
+                <div class="card photo-card">
+                    <div class="photo-header">
+                        <h3><i class="fa-solid fa-camera-retro"></i> <span data-i18n="photo_assistant">摄影天气助手</span></h3>
+                        <span class="pro-tag">PRO</span>
+                    </div>
+                    <div class="photo-grid">
+                        <div class="photo-item">
+                            <i class="fa-solid fa-sun text-gold"></i>
+                            <div>
+                                <small data-i18n="golden_hour">黄金时刻 (日落前)</small>
+                                <strong id="goldenHourTime">--:--</strong>
+                            </div>
+                        </div>
+                        <div class="photo-item">
+                            <i class="fa-solid fa-moon text-blue"></i>
+                            <div>
+                                <small data-i18n="blue_hour">蓝调时刻 (黄昏/黎明)</small>
+                                <strong id="blueHourTime">--:--</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 气象详情网格 (风向、湿度、气压、能见度、UV、AQI等) -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <i class="fa-solid fa-droplet"></i>
+                        <div>
+                            <small data-i18n="humidity">相对湿度</small>
+                            <h4 id="humidityVal">--%</h4>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-gauge"></i>
+                        <div>
+                            <small data-i18n="pressure">大气压强</small>
+                            <h4 id="pressureVal">-- hPa</h4>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-eye"></i>
+                        <div>
+                            <small data-i18n="visibility">能见度</small>
+                            <h4 id="visibilityVal">-- km</h4>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-umbrella"></i>
+                        <div>
+                            <small data-i18n="rain_prob">降雨概率</small>
+                            <h4 id="rainProbVal">--%</h4>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-sun"></i>
+                        <div>
+                            <small data-i18n="uv_index">紫外线指数</small>
+                            <h4 id="uvVal">--</h4>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="fa-solid fa-wind"></i>
+                        <div>
+                            <small data-i18n="air_quality">空气质量 (AQI)</small>
+                            <h4 id="aqiVal">--</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日出日落与月相 -->
+                <div class="card sun-moon-card">
+                    <div class="sun-moon-flex">
+                        <div class="sm-item">
+                            <i class="fa-solid fa-sunrise text-orange"></i>
+                            <div>
+                                <small data-i18n="sunrise">日出时间</small>
+                                <h4 id="sunriseTime">--:--</h4>
+                            </div>
+                        </div>
+                        <div class="sm-item">
+                            <i class="fa-solid fa-sunset text-red"></i>
+                            <div>
+                                <small data-i18n="sunset">日落时间</small>
+                                <h4 id="sunsetTime">--:--</h4>
+                            </div>
+                        </div>
+                        <div class="sm-item">
+                            <i class="fa-solid fa-moon text-purple"></i>
+                            <div>
+                                <small data-i18n="moon_phase">月相</small>
+                                <h4 id="moonPhaseVal">--</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 穿衣及出行建议 -->
+                <div class="card advice-card">
+                    <h3><i class="fa-solid fa-shirt"></i> <span data-i18n="clothing_advice">穿衣与生活建议</span></h3>
+                    <p id="clothingAdviceText">正在分析当前温度与天气，为您生成贴心穿衣指数...</p>
+                </div>
+
+                <!-- 动态天气地图（模拟可视化） -->
+                <div class="card map-card">
+                    <h3><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="weather_map">动态天气雷达模拟</span></h3>
+                    <div class="radar-map-container" id="radarMap">
+                        <div class="radar-sweep"></div>
+                        <div class="map-pin" title="当前定位"></div>
+                        <span class="map-label" id="mapCityLabel">定位区域</span>
+                    </div>
+                </div>
+
+                <!-- 常用城市收藏夹 -->
+                <div class="card favorites-card">
+                    <h3><i class="fa-solid fa-star"></i> <span data-i18n="favorite_cities">收藏城市</span></h3>
+                    <div class="fav-chips" id="favChipsContainer">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="app-footer">
+            <p>&copy; 2026 Aetheris Weather System. Powered by Open-Meteo API & Native JS. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- 引入核心逻辑脚本 -->
+    <script src="app.js"></script>
+</body>
+</html>
